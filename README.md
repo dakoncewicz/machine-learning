@@ -9,7 +9,7 @@ Comparing the Machine Learning (ML) options available in GCP :
 - Cloud AutoML - for those who want to use read-to-use models and bild their own soluton on it
 - BigQuery ML - allows SQL users to build ML solution based on data in BigQuery and avoid having to export data to develop models in Java or Python
 - Kubeflow - supports deploying scalable pipelines in Kubernetes and contenerized worlds
-- Spark MLib - is comprehensive set of math and ML tools that can be used when deploying Cloud Dataproc cluster
+- Spark MLLib - is comprehensive set of math and ML tools that can be used when deploying Cloud Dataproc cluster
   
 --------------------------------------------------------------
 # BigQuery Machine Learning (BigQuery ML)
@@ -55,41 +55,9 @@ BigQueryML - excellent choice for persons who knows SQL, manipulation on data an
     - Bosted Tree and XGBoost
     - TensorFlow (imported)
 - AutoML Tables = interesing feature for those who does not much to know about ML but rather has expertise in business domain
-## 2. Data Loading Best Bracticies
-### 2.1 Data loading overview
-- Batch ingest is free
-- Doesn`t consume query capacity (important from biling perspective)
-- ACID semantics 
-- Load Petabytes per day
-- Possible load data sources:
-  - Cloud Storage
-  - Local machine
-  - Streaming inserts (Streaming API for real-time) 
-  - DML Bulk loads
-  - BigQuery I/O Transform in Cloud Dataflow
 
-### 2.2 Best Practices: Data format
-Faster >> Slower
-- __AVRO (compressed)__ - __the fastest__
-  - Avro (uncompressed)
-  - Parquet /ORC
-  - CSV                                   
-  - JSON
-  - CSV (compressed)
-- __JSON (compressed)__ - __the slowest__
-
-### 2.3 Best Practicies : ELT / ETL
-
-![best practices img](./resources/images/best-practices-etl-elt.001.png)
-
-source : Data Warehousing With BigQuery: Best Practices (Cloud Next '19) link: https://www.youtube.com/watch?v=ZVgt1-LfWW4
-## 3. Data loading examples
+## 2. Data loading examples
 This chapter explains step-by-step how to ingest data into a BigQuery Data Warehouse starting from the simplest way direct batch loading.
-Picture bellow explains end-to-end process in terms of Google Cloud components or services.
-
-![end to end process img](./resources/images/end-to-end-example-001.png)
-
-source : Data Warehousing With BigQuery: Best Practices (Cloud Next '19) link: https://www.youtube.com/watch?v=ZVgt1-LfWW4
 
 Batch loading process can be managed in following steps:
 1. Load the data source files (sometimes called feeds) into Google Cloud Storage. GCS can be viewed as Data Lake component. As a principle use: one batch = one file in GCS = one raw-data table.
@@ -176,16 +144,8 @@ This Lab demonstrates how to simply load text files into BigQuery table.
 
 ### 3.2 Lab 2: Dataflow template
 #### Dataflow quick overview
-Dataflow is a managed service for executing a wide variety of data processing patterns. Dataflow is based on Apache Beam project.
-
-The Apache Beam is an open source programming model that enables you to develop both batch and streaming pipelines. You create your pipelines with an Apache Beam program and then run them on the Dataflow service. The Apache Beam documentation (ref: https://beam.apache.org/documentation/ ) provides in-depth conceptual information and reference material for the Apache Beam programming model, SDKs, and other runners.
-
-Dataflow cloud service key features:
-- Enables batch and streaming processing data pipeline,
-- Simplify operations and management - allows teams to focus on programming (Python, Java and Go) instead of managing server clusters
-  - Dataflow's serverless approach removes operational overhead from data engineering workloads,
-- Automated resource management and dynamic work rebalancing
-- Flexible resource scheduling pricing for batch processing
+Dataflow is a managed service for executing a wide variety of data processing patterns, built up on the Apache Beam project.
+The Apache Beam documentation (ref: https://beam.apache.org/documentation/ ) provides in-depth conceptual information and reference material for the Apache Beam programming model, SDKs, and other runners.
 
 This Lab provides a few steps to implement and run simple dataflow job transforming input file and counting how many times aeach word occours in text input files. Lab demonstrates how to use in Google Console predfined Dataflow templates. 
 Next Lab will explain how to write simple dataflow job using Python.
@@ -197,21 +157,21 @@ Next Lab will explain how to write simple dataflow job using Python.
 ![create job from a template](./resources/images/create-dataflow-job-001.png)
 
 - on the screen define new job, setting up the bellow parameters:
-  - Job name: __dfl-job-lab2__
-  - Dataflow temlplate: __wordcount__
-  - Input file(s) in Cloud Storage: __gs://dataflow-samples/shakespeare/kinglear.txt__
-  - Output Cloud Storage file prefix: __gs://mlbq-my-bucket/counts__
-  - Teporary location: __gs://mlbq-my-bucket/temp__
-  - Encryption: leave the option __Google-managed key__
+  - Job name: `dfl-job-lab2`
+  - Dataflow temlplate: `wordcount`
+  - Input file(s) in Cloud Storage: `gs://dataflow-samples/shakespeare/kinglear.txt`
+  - Output Cloud Storage file prefix: `gs://mlbq-my-bucket/counts`
+  - Temporary location: `gs://mlbq-my-bucket/temp`
+  - Encryption: leave the option `Google-managed key`
 
 #### Step 2 Run the Job
-- Click the button __RUN JOB__
+- Click the button [__RUN JOB__]
 - Within a few seconds you will see the Job Graph, like is shown on bellow picture.
 
 ![job running graph](./resources/images/job-running-graph-001.png)
 
 #### Step 3 Check the result
-- Got o the Cloud Storage __mlbq-my-bucket__ and open one of __counts-00000n-of-00003__ files
+- Go to the Cloud Storage `mlbq-my-bucket` and open one of `counts-00000n-of-00003` files
 
 - files contain the partly results of counting the words in public input text file __kinglear.txt__
 #### Summary
@@ -219,69 +179,63 @@ This Lab demonstrates how to use Dataflow predefined template to run simple Data
 - we can use some of templates to transform source data into data sink; in that case both are text files but we can easily transform source data into eg. BigQuery table.
 - using Dataflow we can not only load the data from one place to another but make some transformations as well. 
 
-### 3.3 Lab : Dataflow simple pipeline
-This Lab demonstrates how to write simple dataflow job using Python. This job countes how many times occours one particular word in source files. In this case we will search "import" word in *.java files (./java catalog).
-Lab is splited into two fases :
-- demonstrates how to run sample Python programm on local machine using Apache Beam python library
-- next how to move this programm into Google Cloud environemnt
-#### Step 1 Run set up package with Admin privilages
-- run bash script 
+### 3.3 Lab 3: Dataflow simple pipeline
+This Lab demonstrates how to write simple dataflow job using Python. This job countes how many times words occour in source files. In this case counting file will be sample text kinglear.txt. Ref: `gs://dataflow-samples/shakespeare/kinglear.txt`
+__Important Note:__ Dataflow no longer supports pipelines using Python 2. For more information, see Python 2 support on Google Cloud page https://cloud.google.com/dataflow/docs/quickstarts/quickstart-python?refresh=1#:~:text=Dataflow%20no%20longer%20supports%20pipelines%20using%20Python%202.%20For%20more%20information%2C%20see%20Python%202%20support%20on%20Google%20Cloud%20page.
+
+Lab is splited into two phases :
+- demonstrates how to run sample Python programm on `Colab` environment using Apache Beam python library
+- next how to run cloud version of this programm into Google Cloud environemnt
+- you can compare this two versions of the same functionality ran on Colab and in cloud environment - both using Apache Beam. 
+#### Step 1 Run the wordcount_local.py program localy on Colab
+- clone the  repo https://github.com/dakoncewicz/machine-learning/dataflow-simple-pipeline  to your local machine 
+- run downloaded Python code in Google Colab environment - goto https://colab.research.google.com/
+  - in colab install the apache_beam package
 ```
+!{'pip install --quiet apache_beam'}
+```
+  - next, copy your file `wordcount-local.py` to Colab cell and afterward run this code.
+  - check the result of calculation printing the first 20 line of the results, remember there are no ordering guarantees; in the next Colab cell, type
+```
+#!{('head -n 20 {}-00000-of-*'.format(<OUTPUT_PREFIX>)}
+```
+Note: to run this code from Cloud Shell see: https://cloud.google.com/dataflow/docs/quickstarts/quickstart-python?refresh=1 as an guideline.
+
+#### Step 2 Run the wordcount_cloud.py using Dataflow
+- on your left side navigation bar go to Dataflow 
+- Note : while using Dataflow in a Cloud we cannot get the file from a local machine, we need to copy this sample java files onto GCP. In this Lab it is unnecessary once we use google sample text
+- otherwise run the command to copy your own text files instead of
+```
+$ gsutil cp ./java/*.java gs://mlbq-my-bucket/java
+```
+- enable Dataflow API 
+  - from leftside navigation bar select the API Manager > Dashboard and run it
+  - click the button [Enable API] on the top
+  - search the Dataflow 
+- within the programm `wordcount_cloud.py` check the variables: PROJECT_ID, BUCKET _ID and BUCKET_FOLDER
+- run the cloud version of wordcount programm
+```
+$ python wordcount_cloud.py --input gs://dataflow-samples/shakespeare/kinglear.txt --output outputs/count
 ```
 
-#### Step 1 Setup and requirements
-- Sign in to Cloud Console and create a new project or reuse an existing one. (If you don't already have a Gmail or G Suite account, you must create one.). Note : memorize the url console.cloud.google.com.
-- 
-```
-#### Step 2  Run the Cloud Shell
-- From the Cloud Console, click Activate Cloud Shell 
-- Run the following command in Cloud Shell to confirm that you are authenticated:
-```
-gcloud auth list
-```
-  - in response, you shoud see in Cloud Shell the following command output :
-```
- Credentialed Accounts
-ACTIVE  ACCOUNT
-*       <my_account>@<my_domain.com>
+#### Step 4 Check your Lab succesed 
+- go to the Cloud Console and in the Dataflow service find the job `goodjob`, click on it
+- on the right side bar menu you can find the basic metrics of the Dataflow job
+#### Step 5 Clean your resources
+To avoid incurring charges to your Google Cloud account for the resources used on this page, follow these steps.
 
-To set the active account, run:
-    $ gcloud config set account `ACCOUNT`
-```
-- list the available project list
-```
-gcloud config list project
-```
-  - the expected outpot should looks like this
-```
-  [core]
-project = <PROJECT_ID>
-```
-  - if NOT, setup the project, using bellow commands
-```
-gcloud config set project <PROJECT_ID>
-```
+Note: If you followed this quickstart in a new project, then you can delete the project.
+In the Cloud Console, go to the Cloud Storage Browser page.
+[`Go to Browser`]
 
-#### Step 3  Create a new Cloud Storage bucket
-- 
+Click the checkbox for the bucket that you want to delete.
+To delete the bucket, click [`Delete`] button, and then follow the instructions.
 
-#### Step 4 Create a Maven project
-- After Cloud Shell launches, let's get started by creating a Maven project using the Java SDK for Apache Beam.
-- Run the __mvn archetype:generate__ command in your shell as follows:
-```
-mvn archetype:generate \
-     -DarchetypeGroupId=org.apache.beam \
-     -DarchetypeArtifactId=beam-sdks-java-maven-archetypes-examples \
-     -DarchetypeVersion=2.22.0 \
-     -DgroupId=org.example \
-     -DartifactId=first-dataflow \
-     -Dversion="0.1" \
-     -Dpackage=org.apache.beam.examples \
-     -DinteractiveMode=false
-```
-- After running the command, you should see a new directory called first-dataflow under your current directory. first-dataflow contains a Maven project that includes the Cloud Dataflow SDK for Java and example pipelines.
-#### Step 5 Run a text processing pipeline using DataFlow
-#### Step 6 Check your Lab succesed 
-#### Step 7 Clean your resources
+### 3.4 Lab 4:  Writing ouput to BigQuery table
 
-### 3.4 Lab : Dataflow streaming ingestion using Pub/Sub Google Cloud queueing system (comming soon)
+### 3.5 Lab 5: Using DLP (Data Loss Prevention) to secure PII data
+https://cloud.google.com/architecture/de-identification-re-identification-pii-using-cloud-dlp
+
+
+
+### 3.6 Lab 6: Dataflow streaming ingestion using Pub/Sub Google Cloud queueing system (comming soon)
